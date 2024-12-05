@@ -184,8 +184,16 @@ class ChatGPTOrder:
 # "user"が送信側、"assistant"がChatGPT
 
     async def assistantResponseMessage(self, endpointUrl: str, model: str, apiKey: str, messages: str, maxTokens: int):
+        self.logger.debug(f'\nendpointUrl: {endpointUrl}\nmodel: {model}\napiKey: {apiKey}\nmessages: {messages}\n')
+
         response = await self.chatGptRequest(endpointUrl=endpointUrl, model=model, apiKey=apiKey, messages=messages, maxTokens=maxTokens)
-        message = response['choices'][0]['message']
+
+        # レスポンスの構造を確認してエラー処理を追加
+        if 'choices' not in response or not response['choices']:
+            self.logger.error(f"Unexpected response structure: {response}")
+            raise ValueError("Invalid response from API")
+
+        message = response['choices'][0].get('message', {})
         return message
 
 
@@ -193,6 +201,8 @@ class ChatGPTOrder:
 
 
     async def chatGptRequest(self, endpointUrl: str, model: str, apiKey: str, messages: str, maxTokens: int):
+        self.logger.critical(f'\nendpointUrl: {endpointUrl}\nmodel: {model}\napiKey: {apiKey}\nmessages: {messages}\n')
+
         return await self.apiRequest.apiRequest(
             method = 'POST',
             endpointUrl = endpointUrl,

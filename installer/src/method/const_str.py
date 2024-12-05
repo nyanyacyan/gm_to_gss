@@ -71,7 +71,7 @@ class GssInfo(Enum):
 
     WORKSHEET_1='gm'
 
-
+    WORKSHEET_2='新店舗'
 
 
 # ----------------------------------------------------------------------------------
@@ -113,7 +113,8 @@ class EndPoint(Enum):
     Slack = 'https://slack.com/api/chat.postMessage'
     Discord = 'https://discord.com/api/webhooks/1220239805204660314/niMRY1OVJwYh3PY9X9EfF2O6C7ZPhukRDoXfsXlwGBz4n1HKE81MA1B6TQiy2FUnzHfk'
 
-    ChatGPT = 'https://api.openai.com/v1/engines/{}/completions'
+    CHAT_GPT = 'https://api.openai.com/v1/chat/completions'
+
     GOOGLE_MAP="https://maps.googleapis.com/maps/api/place/textsearch/json"
     GOOGLE_MAP_PLACE="https://maps.googleapis.com/maps/api/place/details/json"
 
@@ -122,7 +123,6 @@ class EndPoint(Enum):
 # ChatgptUtils
 
 class ChatgptUtils(Enum):
-    # "gpt-4o-mini-2024-07-18" or "gpt-4o-2024-08-06"
     model='gpt-4o-mini-2024-07-18'
 
     endpointUrl='https://api.openai.com/v1/chat/completions'
@@ -132,8 +132,8 @@ class ChatgptUtils(Enum):
 # ----------------------------------------------------------------------------------
 
 
-class ChatGptPrompt(Enum):
-    recommend="""
+class ChatGptInfo(Enum):
+    PROMPT="""
     渡す店舗情報（JSON形式）から、過去1年以内に出店した店舗を厳選して収集してください。該当する店舗がない場合は「該当なし」と明記してください。
     例.
     [
@@ -163,7 +163,6 @@ class ChatGptPrompt(Enum):
     ・出店日の情報が不足している場合は、その店舗を無視してください。
 
     入力データ形式（例）:
-    ```json
     [
         {
             "店舗名": "洪記餃子",
@@ -191,9 +190,13 @@ class ChatGptPrompt(Enum):
     ・この指示に従い、指定された期間内に出店した店舗情報を収集・整理してください。
     ・Outputデータのみ返答してください。
 
-    店舗情報
-    {json}
+    店舗情報:
     """
+
+    # "gpt-4o-mini-2024-07-18" or "gpt-4o-2024-08-06"
+    MODEL='gpt-4o-mini-2024-07-18'
+
+    MAX_TOKEN=16000
 
 
 # ----------------------------------------------------------------------------------

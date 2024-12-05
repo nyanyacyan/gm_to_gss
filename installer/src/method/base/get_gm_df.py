@@ -28,24 +28,24 @@ class GetGMPlaceDf:
 # ----------------------------------------------------------------------------------
 # GMのPlace APIへのリクエストしてdetail_dataを取得
 
-    def process(self, query):
+    async def process(self, query):
         try:
             self.logger.info(f"******** get_gm_df_list 開始 ********")
 
             # gmAPIリクエスト
-            json_data = self.gm._google_map_api_request(query=query)
+            json_data = await self.gm._google_map_api_request(query=query)
             time.sleep(2)
 
             # plase_id_listを取得
-            plase_id_list = self.gm._get_place_id(json_data=json_data)
+            plase_id_list = await self.gm._get_place_id(json_data=json_data)
             time.sleep(2)
 
             # 詳細データを取得
-            details_data_list = self.gm._place_id_requests_in_list(place_id_list=plase_id_list)
+            details_data_list = await self.gm._place_id_requests_in_list(place_id_list=plase_id_list)
             time.sleep(2)
 
             # 詳細データリストからresult部分を抽出してリストを作成
-            results_data_list= self.gm._get_results_list(place_details_results_list=details_data_list)
+            results_data_list= await self.gm._get_results_list(place_details_results_list=details_data_list)
             time.sleep(2)
 
             # 詳細データをDataFrameに変換

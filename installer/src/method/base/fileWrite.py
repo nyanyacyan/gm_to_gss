@@ -4,7 +4,7 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 
-import os, csv, json, yaml, pickle
+import os, csv, json, pickle
 import pandas as pd
 from datetime import datetime
 from typing import List, Dict, Any
@@ -14,7 +14,7 @@ import aiofiles
 
 # 自作モジュール
 from .utils import Logger
-from ..const_str import Extension
+from const_str import Extension
 from .path import BaseToPath
 from .errorHandlers import FileWriteError
 from .decorators import Decorators

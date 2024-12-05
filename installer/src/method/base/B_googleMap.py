@@ -90,7 +90,7 @@ class GoogleMapBase:
 # ----------------------------------------------------------------------------------
 # Google mapAPIへのrequest
 
-    def _google_map_api_request(self, query):
+    async def _google_map_api_request(self, query):
         try:
             self.logger.info(f"******** google_map_api_request 開始 ********")
 
@@ -104,7 +104,7 @@ class GoogleMapBase:
             }
 
             # response = requests.get(endpoint_url, params=params, timeout=10)
-            response = asyncio.run(self.fetch_data(endpoint_url=endpoint_url, params=params, timeout=10))
+            response = await self.fetch_data(endpoint_url=endpoint_url, params=params, timeout=10)
             # self.logger.info(f"response: {response[:20]}")
             return response
 
@@ -130,6 +130,8 @@ class GoogleMapBase:
     def _response_result_checker(self, json_data):
         try:
             self.logger.info(f"******** _response_result_checker 開始 ********")
+
+            self.logger.critical(f'json_data:{json_data}')
 
             if json_data:
                 self.logger.debug(json.dumps(json_data, indent=2, ensure_ascii=False))
@@ -307,7 +309,7 @@ class GoogleMapBase:
 # ----------------------------------------------------------------------------------
 # place_idを取得
 
-    def _get_place_id(self, json_data):
+    async def _get_place_id(self, json_data):
         try:
             self.logger.info(f"******** _get_place_id 開始 ********")
 
@@ -356,7 +358,7 @@ class GoogleMapBase:
 # ----------------------------------------------------------------------------------
 # place_idのリストそれぞれでリクエストを行い詳細データをリスト化する
 
-    def _place_id_requests_in_list(self, place_id_list):
+    async def _place_id_requests_in_list(self, place_id_list):
         try:
             self.logger.info(f"******** get_results_in_place_id_list 開始 ********")
 
@@ -438,7 +440,7 @@ class GoogleMapBase:
 # ----------------------------------------------------------------------------------
 # place_details_dataからresults部分を抽出してリスト化する
 
-    def _get_results_list(self, place_details_results_list):
+    async def _get_results_list(self, place_details_results_list):
         try:
             self.logger.info(f"******** _get_results_list 開始 ********")
 
@@ -1479,19 +1481,25 @@ class GoogleMapBase:
 
             # gmAPIリクエスト
             json_data = self._google_map_api_request(query=query)
+            self.logger.critical(f'json_data: {json_data}')
             time.sleep(2)
 
             # plase_id_listを取得
             plase_id_list = self._get_place_id(json_data=json_data)
+            self.logger.critical(f'plase_id_list: {plase_id_list}')
+
             time.sleep(2)
 
             # 詳細データを取得
             details_data_list = self._place_id_requests_in_list(place_id_list=plase_id_list)
+            self.logger.critical(f'details_data_list: {details_data_list}')
             time.sleep(2)
 
             # 詳細データリストからresult部分を抽出してリストを作成
             results_data_list= self._get_results_list(place_details_results_list=details_data_list)
             time.sleep(2)
+
+            self.logger.critical(f'results_data_list: {results_data_list}')
 
 
             # 詳細データをDataFrameに変換
