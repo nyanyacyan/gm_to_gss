@@ -23,8 +23,8 @@ from .path import BaseToPath
 from .fileWrite import AppendWrite
 from .driverDeco import ClickDeco
 
-from ..const_domain_search import GssInfo, Extension, SubDir, SendMessage, FileName
-from ..const_element_domain import OnamaeXpath
+from ..const_str import GssInfo, Extension, SubDir, SendMessage, FileName
+from ..const_element import OnamaeXpath
 
 load_dotenv()
 

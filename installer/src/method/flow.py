@@ -6,13 +6,17 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 import os, time, asyncio
+import pandas as pd
+from dotenv import load_dotenv
 
 # 自作モジュール
-from .base.utils import Logger
-from .base.pyppeteer import PyppeteerUtils
-from .const_domain_search import SiteUrl, GssInfo
-from .base.chrome import ChromeManager
-from .base.gss_to_notify import GssToNotify
+from base.utils import Logger
+from base.spreadsheetWrite import SpreadsheetWrite
+from base.get_gm_df import GetGMPlaceDf
+
+from const_str import GssInfo
+
+load_dotenv()
 
 
 # ----------------------------------------------------------------------------------
@@ -26,25 +30,31 @@ class Flow:
         self.getLogger = Logger(__name__, debugMode=debugMode)
         self.logger = self.getLogger.getLogger()
 
-        # chrome
-        self.chromeManager = ChromeManager(debugMode=debugMode)
-        self.chrome = self.chromeManager.flowSetupChrome()
+        # const, env
+        self.api_key = os.getenv('GM_API_KEY')
+        self.spreadsheetId = GssInfo.SHEET_ID.value
+        self.worksheet_1 = GssInfo.WORKSHEET_1.value
+        self.worksheet_2 = GssInfo.WORKSHEET_2.value
 
-        # const
-        self.url_1 = SiteUrl.HOME_URL.value
-        self.gss_url = GssInfo.SITE.value
 
 
         # インスタンス
-        self.gss_to_notify = GssToNotify(gss_url=self.gss_url, chrome=self.chrome, debugMode=debugMode)
+        self.gss_write = SpreadsheetWrite(debugMode=debugMode)
+        self.gm_df = GetGMPlaceDf(api_key=self.api_key, debugMode=debugMode)
 
 
 ####################################################################################
 # ----------------------------------------------------------------------------------
 #todo 各メソッドをまとめる
 
-    async def process(self):
-        await self.gss_to_notify.flowProcess()
+    def process(self, query: str):
+        df = self.gm_df.process(query=query)
+        for index, row in df.iterrows():
+            values = [row['name'], row['formatted_phone_number'], row['formatted_address'], row['user_ratings_total']]
+            self.logger.info(f"{index} 行目のデータ:\n{values}")
+
+        # 行ごとのアプローチ
+            self.gss_write._gss_none_cell_update(spreadsheetId=self.spreadsheetId, worksheet=self.worksheet_1, input_values=values)
 
 
 
@@ -58,5 +68,6 @@ class Flow:
 # テスト実施
 
 if __name__ == '__main__':
+    query = '千歳烏山 ラーメン'
     test_flow = Flow()
-    asyncio.run(test_flow.process())
+    test_flow.process(query=query)

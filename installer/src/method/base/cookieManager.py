@@ -11,7 +11,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from .utils import Logger
 from .SQLite import SQLite
 from .loginWithId import LoginID
-from ..const_domain_search import TableName, ColumnsName
+from ..const_str import TableName, ColumnsName
 from .decorators import Decorators
 
 decoInstance = Decorators(debugMode=True)

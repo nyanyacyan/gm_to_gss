@@ -11,7 +11,7 @@ from selenium.common.exceptions import ElementClickInterceptedException
 
 # 自作モジュール
 from .utils import Logger
-from ..const_domain_search import NGWordList, Address
+from ..const_str import NGWordList, Address
 from .decorators import Decorators
 from .textManager import TextManager
 from .driverDeco import ClickDeco

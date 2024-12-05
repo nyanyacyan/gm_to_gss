@@ -7,20 +7,19 @@
 import os, time, sys
 import gspread
 import pandas as pd
-from typing import Any
+from typing import Any, List
 from datetime import datetime
 from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient import errors
 from gspread_dataframe import set_with_dataframe
 from gspread.exceptions import APIError
 from dotenv import load_dotenv
-
+from const_str import FileName
 
 
 # 自作モジュール
 from .utils import Logger
 from .errorHandlers import NetworkHandler
-from .decorators import retryAction
 from .path import BaseToPath
 
 load_dotenv()
@@ -31,7 +30,7 @@ load_dotenv()
 
 
 class SpreadsheetWrite:
-    def __init__(self, jsonKeyName: str, debugMode=True):
+    def __init__(self, debugMode=True):
 
         # logger
         self.getLogger = Logger(__name__, debugMode=debugMode)
@@ -42,7 +41,7 @@ class SpreadsheetWrite:
         self.path = BaseToPath(debugMode=debugMode)
 
         # jsonファイル
-        self.jsonKeyName = self.path.getReadFilePath(fileName=jsonKeyName)
+        self.jsonKeyPath = self.path.getInputDataFilePath(fileName=FileName.JSON_KEY.value)
 
         # 認証情報を渡すために定義
         self._creds = None
@@ -57,7 +56,7 @@ class SpreadsheetWrite:
     def creds(self) -> ServiceAccountCredentials:
         if self._creds is None:
             scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
-            self._creds = ServiceAccountCredentials.from_json_keyfile_name(self.jsonKeyName, scope)
+            self._creds = ServiceAccountCredentials.from_json_keyfile_name(self.jsonKeyPath, scope)
         return self._creds
 
 
@@ -74,7 +73,7 @@ class SpreadsheetWrite:
 # ----------------------------------------------------------------------------------
 # データをWorksheetに書き込む
 
-    @retryAction(maxRetry=3, delay=30)
+    # @retryAction(maxRetry=3, delay=30)
     def writeData(self, spreadsheetId: str, sheetName: str, cell: str, data: Any):
         selectWorkSheet = self.client.open_by_key(spreadsheetId).worksheet(sheetName)
 
@@ -84,30 +83,24 @@ class SpreadsheetWrite:
 
 
 # ----------------------------------------------------------------------------------
-
-#! ここ以降はサーバーエラーに対してリトライの設定なし
-
-
-
-# ----------------------------------------------------------------------------------
 # cellの値がない行を特定
 
-    def _gss_none_cell_update(self, worksheet: str, col_left_num: int, start_row: int, input_values: int):
+    def _gss_none_cell_update(self, spreadsheetId: str, worksheet: str, input_values: List, col_left_num: int = 1, start_row: int = 2):
         self.logger.info(f"********** _column_none_cell 開始 **********")
 
         try:
-            self.logger.debug(f"self.spreadsheetId: {self.spreadsheetId}, start_row: {start_row}")
+            self.logger.debug(f"spreadsheetId: {spreadsheetId}, start_row: {start_row}")
             self.logger.debug(f"worksheet: {worksheet}, col_left_num: {col_left_num}, start_row: {start_row}")
 
 
     # スプシへのアクセスを定義（API）
             #* Scopeはこの場所で特定が必要
             scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
-            c = ServiceAccountCredentials.from_json_keyfile_name(self.jsonKeyName, scope)
+            c = ServiceAccountCredentials.from_json_keyfile_name(self.jsonKeyPath, scope)
             gs = gspread.authorize(c)
 
             # 指定のスプシへアクセス
-            select_sheet = gs.open_by_key(self.spreadsheetId).worksheet(worksheet)
+            select_sheet = gs.open_by_key(spreadsheetId).worksheet(worksheet)
 
             self.logger.debug(f"select_sheet: {select_sheet}")
 
@@ -121,7 +114,7 @@ class SpreadsheetWrite:
 
             # もしなにもなかったらスタートする行の次の行がスタート
             else:
-                none_cell_row = len(col_row) + start_row
+                none_cell_row = len(col_row) + 1
 
             self.logger.debug(f"none_cell_row: {none_cell_row}")
 
@@ -132,7 +125,7 @@ class SpreadsheetWrite:
             cell_range = f"{column}{none_cell_row}"
 
             # スプシに入力できる値に変換  スプシに値を入力する際にはリスト型
-            input_list = [[value] for value in input_values]
+            input_list = [input_values]
 
             self.logger.debug(f"cell_range: {cell_range}")
             self.logger.debug(f"input_list: {input_list}")

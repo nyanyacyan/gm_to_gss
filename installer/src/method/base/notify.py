@@ -6,7 +6,7 @@
 import time
 import os
 import requests
-from ..const_domain_search import EndPoint
+from ..const_str import EndPoint
 from PIL import Image
 from dotenv import load_dotenv
 import aiofiles

@@ -14,7 +14,7 @@ from pyppeteer.page import Page
 from .utils import Logger
 from .fileWrite import AsyncLimitSabDirFileWrite
 from .fileRead import AsyncResultFileRead
-from ..const_domain_search import SubDir
+from ..const_str import SubDir
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
