@@ -10,7 +10,7 @@ import requests
 import json
 import math
 import pandas as pd
-from tkinter import messagebox
+# from tkinter import messagebox
 from dotenv import load_dotenv
 import asyncio
 import aiohttp
@@ -18,7 +18,7 @@ from typing import Optional
 from datetime import datetime
 
 # 自作モジュール
-from const_str import EndPoint, SubDir, Extension
+from ..const_str import EndPoint, SubDir, Extension
 from .utils import Logger
 from .path import BaseToPath
 

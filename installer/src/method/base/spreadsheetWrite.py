@@ -14,7 +14,7 @@ from googleapiclient import errors
 from gspread_dataframe import set_with_dataframe
 from gspread.exceptions import APIError
 from dotenv import load_dotenv
-from const_str import FileName
+from ..const_str import FileName
 
 
 # 自作モジュール
