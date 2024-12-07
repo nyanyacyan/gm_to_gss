@@ -69,9 +69,11 @@ class GssInfo(Enum):
 
     SHEET_ID='1Ya6EJe4laeENG_3lMVJqzV_qYOWEF6NpSeHxVE37yTE'
 
+    JSON_KEY_NAME='handy-station-424804-j2-736b08fedd3a.json'
+
     WORKSHEET_1='gm'
 
-    WORKSHEET_2='新店舗'
+    WORKSHEET_2='検索キーワード'
 
 
 # ----------------------------------------------------------------------------------

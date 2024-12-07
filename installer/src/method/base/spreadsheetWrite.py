@@ -88,64 +88,73 @@ class SpreadsheetWrite:
     def _gss_none_cell_update(self, spreadsheetId: str, worksheet: str, input_values: List, col_left_num: int = 1, start_row: int = 2):
         self.logger.info(f"********** _column_none_cell 開始 **********")
 
-        try:
-            self.logger.debug(f"spreadsheetId: {spreadsheetId}, start_row: {start_row}")
-            self.logger.debug(f"worksheet: {worksheet}, col_left_num: {col_left_num}, start_row: {start_row}")
+        MAX_RETRIES = 5
+        retry_count = 0
+
+        while retry_count < MAX_RETRIES:
+            try:
+                self.logger.debug(f"spreadsheetId: {spreadsheetId}, start_row: {start_row}")
+                self.logger.debug(f"worksheet: {worksheet}, col_left_num: {col_left_num}, start_row: {start_row}")
 
 
-    # スプシへのアクセスを定義（API）
-            #* Scopeはこの場所で特定が必要
-            scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
-            c = ServiceAccountCredentials.from_json_keyfile_name(self.jsonKeyPath, scope)
-            gs = gspread.authorize(c)
+        # スプシへのアクセスを定義（API）
+                #* Scopeはこの場所で特定が必要
+                scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+                c = ServiceAccountCredentials.from_json_keyfile_name(self.jsonKeyPath, scope)
+                gs = gspread.authorize(c)
 
-            # 指定のスプシへアクセス
-            select_sheet = gs.open_by_key(spreadsheetId).worksheet(worksheet)
+                # 指定のスプシへアクセス
+                select_sheet = gs.open_by_key(spreadsheetId).worksheet(worksheet)
 
-            self.logger.debug(f"select_sheet: {select_sheet}")
+                self.logger.debug(f"select_sheet: {select_sheet}")
 
-            # 指定したcolumnの値を入手
-            col_row = select_sheet.col_values(col_left_num)
+                # 指定したcolumnの値を入手
+                col_row = select_sheet.col_values(col_left_num)
 
-            # Noneのcellを見つけたIndexを見つけてそのIndexを取得
-            for i, cell in enumerate(col_row, start=start_row):
-                if cell == '':
-                    none_cell_row = i
+                # Noneのcellを見つけたIndexを見つけてそのIndexを取得
+                for i, cell in enumerate(col_row, start=start_row):
+                    if cell == '':
+                        none_cell_row = i
 
-            # もしなにもなかったらスタートする行の次の行がスタート
-            else:
-                none_cell_row = len(col_row) + 1
+                # もしなにもなかったらスタートする行の次の行がスタート
+                else:
+                    none_cell_row = len(col_row) + 1
 
-            self.logger.debug(f"none_cell_row: {none_cell_row}")
+                self.logger.debug(f"none_cell_row: {none_cell_row}")
 
-            # Aが１になるように変更
-            column = chr(64 + col_left_num)
+                # Aが１になるように変更
+                column = chr(64 + col_left_num)
 
-            # 正しく変換したものを文字列に変換->「A21」みたいにする
-            cell_range = f"{column}{none_cell_row}"
+                # 正しく変換したものを文字列に変換->「A21」みたいにする
+                cell_range = f"{column}{none_cell_row}"
 
-            # スプシに入力できる値に変換  スプシに値を入力する際にはリスト型
-            input_list = [input_values]
+                # スプシに入力できる値に変換  スプシに値を入力する際にはリスト型
+                input_list = [input_values]
 
-            self.logger.debug(f"cell_range: {cell_range}")
-            self.logger.debug(f"input_list: {input_list}")
+                self.logger.debug(f"cell_range: {cell_range}")
+                self.logger.debug(f"input_list: {input_list}")
 
-            # スプシ更新
-            select_sheet.update(cell_range, input_list)
+                # スプシ更新
+                select_sheet.update(cell_range, input_list)
 
-            self.logger.info(f"********** _column_none_cell 終了 **********")
+                self.logger.info(f"********** _column_none_cell 終了 **********")
+                return True
 
-        except errors.HttpError as e:
-            self.logger.error(f"スプシ: 認証失敗{e}")
-            raise
+            except errors.HttpError as e:
+                self.logger.error(f"スプシ: 認証失敗{e}")
+                retry_count += 1
+                time.sleep(10)  # 10秒間待機して再試行
 
-        except gspread.exceptions.APIError as e:
-            self.logger.error(f"スプシ: サーバーエラーのため実施不可{e}")
-            raise
+            except gspread.exceptions.APIError as e:
+                self.logger.error(f"スプシ: サーバーエラーのため再試行します（{retry_count + 1}/{MAX_RETRIES}）: {e}")
+                retry_count += 1
+                self.logger.info(f"15秒間待機してサーバーへの連続したアクセスを抑制してます。しばらくお待ち下さい。")
+                time.sleep(15)  # 10秒間待機して再試行
 
-        except Exception as e:
-            self.logger.error(f"スプシ: 処理中にエラーが発生{e}")
-            raise
+
+            except Exception as e:
+                self.logger.error(f"スプシ: 処理中にエラーが発生{e}")
+                raise
 
 
 # ----------------------------------------------------------------------------------

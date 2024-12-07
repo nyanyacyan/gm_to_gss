@@ -1,6 +1,6 @@
 # coding: utf-8
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-# 2023/3/29更新
+
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
@@ -145,8 +145,8 @@ class GetDataGSSAPI:
 # APIを使ってGSSからデータを取得してDataFrameに変換
 
     @decoInstance.retryAction(maxRetry=3, delay=30)
-    def getDataFrameFromGss(self, KeyName: str, spreadsheetId: str, workSheetName: str):
-        client = self.client(KeyName=KeyName)
+    def getDataFrameFromGss(self, jsonKeyName: str, spreadsheetId: str, workSheetName: str):
+        client = self.client(jsonKeyName=jsonKeyName)
 
         self.logger.debug(f"利用可能なワークシート: {client.open_by_key(spreadsheetId).worksheets()}")
 
@@ -166,9 +166,9 @@ class GetDataGSSAPI:
 # ----------------------------------------------------------------------------------
 # スプシの認証プロパティ
 
-    def creds(self, KeyName: str):
+    def creds(self, jsonKeyName: str):
         SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-        jsonKeyPath = self.path.getReadFilePath(fileName=KeyName)
+        jsonKeyPath = self.path.getInputDataFilePath(fileName=jsonKeyName)
         creds = Credentials.from_service_account_file(jsonKeyPath, scopes=SCOPES)
         return creds
 
@@ -176,8 +176,8 @@ class GetDataGSSAPI:
 # ----------------------------------------------------------------------------------
 # スプシアクセスのプロパティ
 
-    def client(self, KeyName: str):
-        creds = self.creds(KeyName=KeyName)
+    def client(self, jsonKeyName: str):
+        creds = self.creds(jsonKeyName=jsonKeyName)
         client = gspread.authorize(creds)
         return client
 
