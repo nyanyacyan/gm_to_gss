@@ -55,18 +55,32 @@ class Flow:
     async def process(self):
         # スプシから検索キーワードを取得
         read_df = self.gss_read.getDataFrameFromGss(jsonKeyName=self.jsonKeyName, spreadsheetId=self.spreadsheetId, workSheetName=self.worksheet_2)
-        for i, read_row in read_df.iterrows():
-            query = read_row['地名'] + ' ' + read_row['ジャンル']
-            self.logger.debug(f"{i + 1}つ目の検索キーワード: {query}")
 
-            df = await self.gm_df.process(query=query)
-            for index, row in df.iterrows():
-                address = row['formatted_address'].split('日本、')
-                values = [row['name'], row['formatted_phone_number'], address[1], row['user_ratings_total']]
-                self.logger.info(f"{index} 行目のデータ:\n{values}")
+        total_rows = len(read_df)
+        self.logger.critical(f'total_rows: {total_rows}')
 
-            # 行ごとのアプローチ
-                self.gss_write._gss_none_cell_update(spreadsheetId=self.spreadsheetId, worksheet=self.worksheet_1, input_values=values)
+        batch_size = 20
+        for start_idx in range(0, total_rows, batch_size):
+            end_idx = min(start_idx + batch_size, total_rows)
+            self.logger.info(f"実行する行: {start_idx + 1} ~ {end_idx}")
+
+            # 切り取った部分のdf
+            batch_df = read_df.iloc[start_idx: end_idx]
+
+
+            for i, read_row in batch_df.iterrows():
+                query = read_row['地名'] + ' ' + read_row['ジャンル']
+                self.logger.debug(f"{i + 1}つ目の検索キーワード: {query}")
+
+                # Google Maps APIからデータ取得
+                df = await self.gm_df.process(query=query)
+                for index, row in df.iterrows():
+                    address = row['formatted_address'].split('日本、')
+                    values = [row['name'], row['formatted_phone_number'], address[1], row['user_ratings_total']]
+                    self.logger.info(f"{index} 行目のデータ:\n{values}")
+
+                    # 行ごとのアプローチ
+                    self.gss_write._gss_none_cell_update(spreadsheetId=self.spreadsheetId, worksheet=self.worksheet_1, input_values=values)
 
 
 
